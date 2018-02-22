@@ -27,14 +27,16 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.support.v4.content.AsyncTaskLoader;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EarthquakeActivity extends AppCompatActivity{
+public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Earthquake>>{
 
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
     private static final String SAMPLE_JSON_RESPONSE = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
+    private static final int EARTHQUAKE_LOADER_ID = 1;
 
     private EarthquakeAdapter earthquakeAdapter;
 
@@ -65,27 +67,27 @@ public class EarthquakeActivity extends AppCompatActivity{
             }
         });
 
-        earthQuakeAsyncTask earthQuakeAsyncTask=new earthQuakeAsyncTask();
-        earthQuakeAsyncTask.execute(SAMPLE_JSON_RESPONSE);
+        LoaderManager loaderManager=getLoaderManager();
+        loaderManager.initLoader(EARTHQUAKE_LOADER_ID,null,this);
+
     }
 
 
-    private class earthQuakeAsyncTask extends AsyncTask<String, Void, List<Earthquake>> {
-
-        @Override
-        protected List<Earthquake> doInBackground(String... strings) {
-            if (strings.length < 1 || strings[0] == null) {
-                return null;
-            }
-            List<Earthquake> earthquakes= QueryUtils.makeEarthquakeList(strings[0]);
-            return earthquakes;
-        }
-
-        @Override
-        protected void onPostExecute(List<Earthquake> earthquakes) {
-            earthquakeAdapter.clear();
-            if (earthquakes != null && !earthquakes.isEmpty())
-                earthquakeAdapter.addAll(earthquakes);
-        }
+    @Override
+    public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
+        return new EarthQuakeLoader(this,SAMPLE_JSON_RESPONSE);
     }
+
+    @Override
+    public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> earthquakes) {
+        earthquakeAdapter.clear();
+        if (earthquakes != null && !earthquakes.isEmpty())
+            earthquakeAdapter.addAll(earthquakes);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<List<Earthquake>> loader) {
+        earthquakeAdapter.clear();
+    }
+
 }
