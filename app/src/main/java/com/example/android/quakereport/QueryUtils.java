@@ -37,6 +37,7 @@ public final class QueryUtils {
     }
 
     public static List<Earthquake> makeEarthquakeList(String str){
+        Log.v(LOG_TAG, "QueryUtils start");
 
         URL url=createUrl(str);
 
